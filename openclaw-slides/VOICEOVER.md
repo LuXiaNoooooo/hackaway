@@ -6,7 +6,7 @@ Hi everyone, today I want to show you a smarter way to control a home.
 
 What we built is not just another dashboard for individual devices. It is a room-aware home console connected to OpenClaw. The key idea is simple: instead of treating lights, windows, climate, and the robot as isolated controls, we treat the whole home as one spatial system with one shared state.
 
-That lets us go from a natural sentence like, “I just cooked and I want to rest,” to a complete multi-step action plan that is still visible, verifiable, and easy to explain.
+That lets us go from a natural sentence like, "I just cooked and I want to rest," to a complete multi-step action plan that is still visible, verifiable, and easy to explain.
 
 ## Slide 1: What This Project Is
 
@@ -34,7 +34,7 @@ The first is spatial control. Users are not looking at a flat list of smart devi
 
 The second is visible state feedback. We can show light modes, whether windows are open, what the indoor temperature is, what time it is, and whether the robot is running.
 
-The third is semantic control. We can say things like “turn off all lights,” “set the bedroom to night mode,” or “clean the kitchen,” and the system knows how to translate that into specific API actions.
+The third is semantic control. We can say things like "turn off all lights," "set the bedroom to night mode," or "clean the kitchen," and the system knows how to translate that into specific API actions.
 
 ## Slide 4: How OpenClaw Connects
 
@@ -74,29 +74,29 @@ Each one will show how OpenClaw turns natural language into coordinated actions 
 
 ## Demo Part 1: Frontend Tour
 
-Let’s start with the console.
+Let's start with the console.
 
 Here we can see the floorplan in 2D. Each room is explicit, and each device is placed in context. Lights, windows, doors, TV, AC, and the robot all live on the same map.
 
-What matters here is clarity. The user can immediately understand what exists, where it is, and what state it is in. That makes the home easier to control, and it also makes OpenClaw’s decisions easier to explain.
+What matters here is clarity. The user can immediately understand what exists, where it is, and what state it is in. That makes the home easier to control, and it also makes OpenClaw's decisions easier to explain.
 
-## Demo Part 2: “I just cooked and I want to rest.”
+## Demo Part 2: "I just cooked and I want to rest."
 
-Now I’ll give OpenClaw the first command:
+Now I'll give OpenClaw the first command:
 
-“I just cooked and I want to rest.”
+"I just cooked and I want to rest."
 
 OpenClaw reads the current state, recognizes that this is a kitchen-to-bedroom transition, and builds the right scene.
 
 The robot starts cleaning the kitchen. All lights go off, except the bedroom, which switches into night mode. Windows close. The climate moves into a sleep-friendly setting.
 
-What is important is that this is not one hardcoded button. It is a room-aware plan assembled from the user’s intent.
+What is important is that this is not one hardcoded button. It is a room-aware plan assembled from the user's intent.
 
-## Demo Part 3: “I’m leaving home.”
+## Demo Part 3: "I'm leaving home."
 
 For the second scenario, I tell OpenClaw:
 
-“I’m leaving home.”
+"I'm leaving home."
 
 Now the system shifts into an away-state routine.
 
@@ -104,11 +104,11 @@ Lights go off. TV and climate shut down. Doors and windows close. And the robot 
 
 This is a good example of why batch execution matters. Instead of separate actions firing in a messy way, we can execute one ordered chain and get one final verified state back.
 
-## Demo Part 4: “I’m going to watch TV.”
+## Demo Part 4: "I'm going to watch TV."
 
 For the last scenario, I say:
 
-“I’m going to watch TV.”
+"I'm going to watch TV."
 
 OpenClaw understands that this is not just about turning on a screen. It is about creating the right environment.
 
