@@ -138,6 +138,57 @@ export function buildOpenClawDeviceState(device, context = {}) {
     };
   }
 
+  if (device.type === "fridge") {
+    return {
+      target: device.id,
+      capability: "fridge",
+      state: {
+        doorOpen: device.isOpen,
+        fridgeTemperature: device.fridgeTemperature,
+        freezerTemperature: device.freezerTemperature,
+        fridgeItems: device.fridgeItems ?? [],
+        freezerItems: device.freezerItems ?? []
+      },
+      commands: [
+        {
+          action: "set_fridge_door",
+          method: "POST",
+          path: "/api/devices/fridge/door",
+          body: withDeviceId(device, { open: !device.isOpen })
+        },
+        {
+          action: "set_fridge_temperature",
+          method: "POST",
+          path: "/api/devices/fridge/temperature",
+          body: withDeviceId(device, {
+            fridgeTemperature: device.fridgeTemperature,
+            freezerTemperature: device.freezerTemperature
+          })
+        },
+        {
+          action: "add_fridge_item",
+          method: "POST",
+          path: "/api/devices/fridge/items",
+          body: withDeviceId(device, {
+            action: "add",
+            compartment: "fridge",
+            item: { name: "ITEM_NAME", quantity: 1, unit: "pcs" }
+          })
+        },
+        {
+          action: "remove_fridge_item",
+          method: "POST",
+          path: "/api/devices/fridge/items",
+          body: withDeviceId(device, {
+            action: "remove",
+            compartment: "fridge",
+            itemName: "ITEM_NAME"
+          })
+        }
+      ]
+    };
+  }
+
   return {
     target: device.id,
     capability: "robot",

@@ -1,7 +1,7 @@
 # API Reference
 
 Base URL:
-- Local dev: `http://127.0.0.1:5173`
+- api url: `http://10.37.129.2:5173`
 - Adjust the host and port to match the running console
 
 All write operations are `POST`.
@@ -233,6 +233,92 @@ Away example with unit still running:
   "power": true
 }
 ```
+
+### Fridge
+
+#### `POST /api/devices/fridge/door`
+
+Body:
+```json
+{
+  "id": "device-fridge-kitchen",
+  "open": true
+}
+```
+
+#### `POST /api/devices/fridge/temperature`
+
+Body:
+```json
+{
+  "id": "device-fridge-kitchen",
+  "fridgeTemperature": 3,
+  "freezerTemperature": -20
+}
+```
+
+Notes:
+- Fridge temperature is clamped to `1-8`
+- Freezer temperature is clamped to `-25` to `-10`
+- Both fields are optional; omit a field to leave it unchanged
+
+#### `POST /api/devices/fridge/items`
+
+Purpose:
+- Manage fridge or freezer inventory
+
+Add an item:
+```json
+{
+  "id": "device-fridge-kitchen",
+  "action": "add",
+  "compartment": "fridge",
+  "item": {
+    "name": "Whole Milk",
+    "quantity": 1,
+    "unit": "L"
+  }
+}
+```
+
+Remove an item:
+```json
+{
+  "id": "device-fridge-kitchen",
+  "action": "remove",
+  "compartment": "fridge",
+  "itemName": "Whole Milk",
+  "quantity": 1
+}
+```
+
+Clear a compartment:
+```json
+{
+  "id": "device-fridge-kitchen",
+  "action": "clear",
+  "compartment": "freezer"
+}
+```
+
+Replace all items in a compartment:
+```json
+{
+  "id": "device-fridge-kitchen",
+  "action": "set",
+  "compartment": "fridge",
+  "items": [
+    { "name": "Milk", "quantity": 2, "unit": "L" },
+    { "name": "Eggs", "quantity": 12, "unit": "pcs" }
+  ]
+}
+```
+
+Notes:
+- `compartment` can be `"fridge"` or `"freezer"` (defaults to `"fridge"`)
+- When adding, if an item with the same name already exists, the quantity is increased
+- When removing without specifying quantity, the entire item is removed
+- `unit` is freeform text (e.g., `"L"`, `"pcs"`, `"pack"`, `"kg"`, `"bag"`)
 
 ### Robot
 

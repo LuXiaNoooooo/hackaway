@@ -12,6 +12,7 @@ This skill is optimized for:
 - Multi-step “scene” execution
 - Safe selection of devices by room or capability
 - Robot cleaning tasks that should not require geometry planning
+- Smart fridge inventory management and temperature control
 
 Do not use this skill for:
 - Editing the floorplan document directly
@@ -102,6 +103,124 @@ Important behavior:
 This makes “only keep bedroom lights in night mode” easy:
 1. Turn all lights off
 2. Apply bedroom `night` mode
+
+## Fridge Rules
+
+The fridge device tracks door state, temperatures, and inventory across two compartments (fridge and freezer).
+
+Endpoints:
+- `POST /api/devices/fridge/door` — open or close the door: `{ "id": "...", "open": true }`
+- `POST /api/devices/fridge/temperature` — set temperatures: `{ "id": "...", "fridgeTemperature": 4, "freezerTemperature": -18 }`
+- `POST /api/devices/fridge/items` — manage inventory
+
+Item management actions:
+- Add: `{ "id": "...", "action": "add", "compartment": "fridge", "item": { "name": "Milk", "quantity": 1, "unit": "L" } }`
+- Remove: `{ "id": "...", "action": "remove", "compartment": "fridge", "itemName": "Milk" }`
+- Clear: `{ "id": "...", "action": "clear", "compartment": "fridge" }`
+- Set all: `{ "id": "...", "action": "set", "compartment": "fridge", "items": [...] }`
+
+Temperature ranges:
+- Fridge: 1°C to 8°C (default 4°C)
+- Freezer: -25°C to -10°C (default -18°C)
+
+Heuristics:
+- "What's in the fridge?" → Read state and list fridgeItems + freezerItems
+- "Add milk" → Use fridge/items with action "add"
+- "I used the eggs" → Use fridge/items with action "remove"
+- "Set fridge colder" → Decrease fridgeTemperature by 1-2 degrees
+
+### Picnic Integration — Fridge Restock for Recipes
+
+When the user says something like "补全冰箱我要做博洛尼亚意大利面" or "restock fridge for Bolognese pasta", execute this multi-step workflow:
+
+**Step 1: Authenticate with Picnic** (if not already done)
+
+```bash
+AUTH_TOKEN=$(curl -s -D - -o /dev/null \
+  -H "Content-Type: application/json" \
+  -H "x-picnic-agent: 30100;3.3.0" \
+  -H "x-picnic-did: AGENT-001" \
+  -d '{"key": "picnic-22@hackaway.com", "password": "123456", "client_id": 30100}' \
+  "https://storefront-prod.nl.picnicinternational.com/api/15/user/login" \
+  | grep -i "x-picnic-auth" | awk '{ gsub(/,/, ""); print $2 }' | tr -d '\r\n')
+echo -n "$AUTH_TOKEN" > /tmp/picnic-token
+echo "Done! Token length: ${#AUTH_TOKEN}"
+```
+
+**Step 2: Read current fridge contents**
+
+```bash
+curl -s http://127.0.0.1:5173/api/home/state
+```
+
+Extract `fridgeItems` and `freezerItems` from the fridge device in `state.devices`.
+
+**Step 3: Search for recipe on Picnic**
+
+```bash
+curl -s -X GET "https://storefront-prod.nl.picnicinternational.com/api/15/pages/hackathon-search-recipes?query=bolognese&limit=5" \
+  -H "x-picnic-auth: $(cat /tmp/picnic-token)" \
+  -H "x-picnic-agent: 30100;3.3.0" \
+  -H "x-picnic-did: AGENT-001"
+```
+
+If a Picnic recipe is found, get its ingredient list via `hackathon-get-recipe`.
+If not found, use knowledge of the recipe to build a general ingredient list.
+
+**Step 4: Compare recipe ingredients vs fridge contents**
+
+For each ingredient the recipe needs:
+- Check if it already exists in `fridgeItems` or `freezerItems` (fuzzy name match)
+- If it exists with enough quantity → skip
+- If it exists but quantity is low → search Picnic for more
+- If missing → search Picnic for it
+
+**Step 5: Search and add missing items to Picnic cart**
+
+For each missing ingredient:
+```bash
+# Search for the product
+curl -s -X GET "https://storefront-prod.nl.picnicinternational.com/api/15/pages/hackathon-search-products?query=gehakt&limit=3" \
+  -H "x-picnic-auth: $(cat /tmp/picnic-token)" \
+  -H "x-picnic-agent: 30100;3.3.0" \
+  -H "x-picnic-did: AGENT-001"
+
+# Add first available result to cart
+curl -s -X POST "https://storefront-prod.nl.picnicinternational.com/api/15/pages/task/hackathon-add-to-cart" \
+  -H "Content-Type: application/json" \
+  -H "x-picnic-auth: $(cat /tmp/picnic-token)" \
+  -H "x-picnic-agent: 30100;3.3.0" \
+  -H "x-picnic-did: AGENT-001" \
+  -d '{"payload": {"selling_unit_id": "s1234567", "count": 1}}'
+```
+
+**Step 6: Update fridge inventory with incoming groceries**
+
+After adding to cart, also update the fridge to reflect the expected incoming items:
+
+```bash
+curl -s -X POST http://127.0.0.1:5173/api/devices/fridge/items \
+  -H "Content-Type: application/json" \
+  -d '{"id": "device-fridge-kitchen", "action": "add", "compartment": "fridge", "item": {"name": "Ground Beef", "quantity": 1, "unit": "500g"}}'
+```
+
+**Step 7: Summarize to user**
+
+Tell the user:
+- What recipe was found
+- Which ingredients were already in the fridge
+- What was added to the Picnic cart (with prices if available)
+- What was added to the fridge inventory
+- Total estimated cost
+
+### General Picnic Integration Patterns
+
+The fridge inventory enables several Picnic integration workflows:
+
+1. **Recipe restock** (above) — user names a dish, agent finds ingredients, compares fridge, orders missing items
+2. **Weekly restock** — compare fridge against usual household staples, order what's running low
+3. **Post-delivery update** — after Picnic delivery arrives, user says "update fridge", agent adds delivered items to inventory
+4. **Expiry management** — check items that might expire soon, suggest recipes to use them up
 
 ## Batch Strategy
 

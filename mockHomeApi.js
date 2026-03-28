@@ -8,6 +8,7 @@ const capabilityDeviceTypes = {
   door: "door",
   climate: "ac",
   tv: "tv",
+  fridge: "fridge",
   robot: "robot"
 };
 const climatePresets = {
@@ -418,6 +419,75 @@ function applyDeviceCommand(devices, suffix, body, state) {
     return devices;
   }
 
+  if (suffix === "fridge/door") {
+    for (const device of devices) {
+      device.isOpen = Boolean(body.open);
+    }
+    return devices;
+  }
+
+  if (suffix === "fridge/temperature") {
+    for (const device of devices) {
+      if (body.fridgeTemperature != null) {
+        device.fridgeTemperature = clampFridgeTemperature(body.fridgeTemperature);
+      }
+      if (body.freezerTemperature != null) {
+        device.freezerTemperature = clampFreezerTemperature(body.freezerTemperature);
+      }
+    }
+    return devices;
+  }
+
+  if (suffix === "fridge/items") {
+    const action = body.action;
+    const compartment = body.compartment === "freezer" ? "freezerItems" : "fridgeItems";
+
+    for (const device of devices) {
+      if (action === "add" && body.item) {
+        const existing = device[compartment].find(
+          (item) => item.name.toLowerCase() === body.item.name?.toLowerCase()
+        );
+        if (existing) {
+          existing.quantity = (existing.quantity ?? 0) + (body.item.quantity ?? 1);
+          if (body.item.unit) existing.unit = body.item.unit;
+        } else {
+          device[compartment].push({
+            name: body.item.name,
+            quantity: body.item.quantity ?? 1,
+            unit: body.item.unit ?? "pcs"
+          });
+        }
+      }
+
+      if (action === "remove" && body.itemName) {
+        const idx = device[compartment].findIndex(
+          (item) => item.name.toLowerCase() === body.itemName.toLowerCase()
+        );
+        if (idx !== -1) {
+          const removeQty = body.quantity ?? device[compartment][idx].quantity;
+          device[compartment][idx].quantity -= removeQty;
+          if (device[compartment][idx].quantity <= 0) {
+            device[compartment].splice(idx, 1);
+          }
+        }
+      }
+
+      if (action === "clear") {
+        device[compartment] = [];
+      }
+
+      if (action === "set" && Array.isArray(body.items)) {
+        device[compartment] = body.items.map((item) => ({
+          name: item.name ?? "Unknown",
+          quantity: item.quantity ?? 1,
+          unit: item.unit ?? "pcs"
+        }));
+      }
+    }
+
+    return devices;
+  }
+
   if (suffix === "robot/route") {
     const route = normalizeRoute(body.route);
 
@@ -761,6 +831,16 @@ function normalizeTimeMinutes(minutes) {
 function clampTemperature(value) {
   const numeric = Number(value);
   return Math.max(16, Math.min(30, Math.round(Number.isFinite(numeric) ? numeric : 24)));
+}
+
+function clampFridgeTemperature(value) {
+  const numeric = Number(value);
+  return Math.max(1, Math.min(8, Math.round(Number.isFinite(numeric) ? numeric : 4)));
+}
+
+function clampFreezerTemperature(value) {
+  const numeric = Number(value);
+  return Math.max(-25, Math.min(-10, Math.round(Number.isFinite(numeric) ? numeric : -18)));
 }
 
 function roundTemperature(value) {

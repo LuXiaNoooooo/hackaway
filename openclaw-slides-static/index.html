@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hackaway x OpenClaw Presentation</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f5f5f7;
+        --surface: rgba(255, 255, 255, 0.92);
+        --surface-strong: #ffffff;
+        --text: #111111;
+        --muted: #6e6e73;
+        --line: #d2d2d7;
+        --accent: #0071e3;
+        --shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+        font-family: "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(circle at top left, rgba(0, 113, 227, 0.08), transparent 26%),
+          radial-gradient(circle at right center, rgba(255, 255, 255, 0.95), transparent 30%),
+          var(--bg);
+        color: var(--text);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 24px 24px 72px;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 16px 0;
+        backdrop-filter: blur(14px);
+      }
+
+      .brand {
+        display: grid;
+        gap: 2px;
+      }
+
+      .eyebrow {
+        margin: 0;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      .nav a {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.74);
+        border: 1px solid rgba(210, 210, 215, 0.9);
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .nav a:hover {
+        color: var(--text);
+        border-color: rgba(0, 113, 227, 0.28);
+      }
+
+      .hero {
+        padding: 72px 0 44px;
+        text-align: center;
+      }
+
+      .hero h2 {
+        max-width: 900px;
+        margin: 0 auto;
+        font-size: clamp(44px, 7vw, 88px);
+        line-height: 0.96;
+        letter-spacing: -0.06em;
+      }
+
+      .hero p {
+        max-width: 760px;
+        margin: 20px auto 0;
+        font-size: 22px;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      .hero-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 40px;
+      }
+
+      .tile,
+      .section-card,
+      .comparison-card,
+      .demo-card {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+      }
+
+      .tile {
+        padding: 22px;
+        text-align: left;
+      }
+
+      .tile strong {
+        display: block;
+        margin-top: 10px;
+        font-size: 26px;
+        letter-spacing: -0.04em;
+      }
+
+      .tile span {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+
+      .tile-top,
+      .card-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .icon-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 38px;
+        height: 38px;
+        border-radius: 999px;
+        background: rgba(0, 113, 227, 0.08);
+        color: var(--accent);
+        flex: 0 0 auto;
+      }
+
+      .icon-badge svg {
+        width: 18px;
+        height: 18px;
+      }
+
+      section {
+        padding: 28px 0;
+      }
+
+      .section-heading {
+        max-width: 760px;
+        margin-bottom: 24px;
+      }
+
+      .section-heading h3 {
+        margin: 0;
+        font-size: clamp(30px, 4.4vw, 54px);
+        line-height: 1.02;
+        letter-spacing: -0.05em;
+      }
+
+      .section-heading p {
+        margin: 14px 0 0;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.65;
+      }
+
+      .grid-2,
+      .grid-3 {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .section-card,
+      .comparison-card,
+      .demo-card {
+        padding: 26px;
+      }
+
+      .section-card h4,
+      .comparison-card h4,
+      .demo-card h4 {
+        margin: 0;
+        font-size: 24px;
+        letter-spacing: -0.04em;
+      }
+
+      .section-card p,
+      .comparison-card p,
+      .demo-card p,
+      .section-card li {
+        color: var(--muted);
+        line-height: 1.7;
+        font-size: 16px;
+      }
+
+      .section-card ul {
+        margin: 14px 0 0;
+        padding-left: 18px;
+      }
+
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .team-card {
+        padding: 24px;
+      }
+
+      .team-card h4 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.03em;
+      }
+
+      .team-role {
+        margin: 8px 0 0;
+        color: var(--accent);
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .team-meta {
+        display: grid;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .team-meta-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      .mini-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: rgba(17, 17, 17, 0.04);
+        color: #4b5563;
+        flex: 0 0 auto;
+      }
+
+      .mini-icon svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        background: rgba(0, 113, 227, 0.06);
+        border: 1px solid rgba(0, 113, 227, 0.12);
+        color: #255aa8;
+        font-size: 14px;
+      }
+
+      .flow {
+        display: grid;
+        gap: 14px;
+      }
+
+      .flow-row {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 18px;
+        padding: 18px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .flow-row:first-child {
+        border-top: 0;
+        padding-top: 0;
+      }
+
+      .flow-label {
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      .comparison-card {
+        display: grid;
+        gap: 20px;
+      }
+
+      .comparison-block strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .comparison-block.traditional strong {
+        color: #8e8e93;
+      }
+
+      .comparison-block.ours strong {
+        color: var(--accent);
+      }
+
+      .demo-card .label {
+        margin-bottom: 10px;
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .demo-card .outcome {
+        margin-top: 12px;
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      .footer {
+        margin-top: 24px;
+        padding: 30px 0 8px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 15px;
+      }
+
+      @media (max-width: 960px) {
+        .hero-strip,
+        .grid-2,
+        .grid-3,
+        .team-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .flow-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .topbar {
+          position: static;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .nav {
+          justify-content: flex-start;
+        }
+
+        .hero {
+          padding-top: 32px;
+        }
+
+        .hero p {
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="topbar">
+        <div class="brand">
+          <p class="eyebrow">Hackaway Home Console</p>
+          <h1>OpenClaw Presentation</h1>
+        </div>
+        <nav class="nav">
+          <a href="#team">Team</a>
+          <a href="#stack">Stack</a>
+          <a href="#features">Features</a>
+          <a href="#openclaw">OpenClaw</a>
+          <a href="#advantage">Why Better</a>
+          <a href="#demo">Demo</a>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <p class="eyebrow">Spatial, agentic, room-aware</p>
+        <h2>A smarter home control system built for OpenClaw.</h2>
+        <p>
+          Hackaway combines a 2D spatial console, a semantic control API, and an OpenClaw skill
+          layer so one natural-language request can orchestrate an entire home and return a
+          verifiable final state.
+        </p>
+
+        <div class="hero-strip">
+          <article class="tile">
+            <div class="tile-top">
+              <span class="icon-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3.5" y="5" width="17" height="14" rx="2"></rect>
+                  <path d="M8 9h8M8 13h4"></path>
+                </svg>
+              </span>
+              <p class="eyebrow">Interaction</p>
+            </div>
+            <strong>2D-first</strong>
+            <span>Rooms, devices, and live states are visible in one spatial surface.</span>
+          </article>
+          <article class="tile">
+            <div class="tile-top">
+              <span class="icon-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 8h10M7 12h10M7 16h6"></path>
+                  <rect x="3.5" y="4.5" width="17" height="15" rx="2"></rect>
+                </svg>
+              </span>
+              <p class="eyebrow">API</p>
+            </div>
+            <strong>Semantic</strong>
+            <span>Control one device, one room, many rooms, or an entire capability group.</span>
+          </article>
+          <article class="tile">
+            <div class="tile-top">
+              <span class="icon-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 17l-3-5 3-5"></path>
+                  <path d="M17 7l3 5-3 5"></path>
+                  <path d="M10 18h4M10 6h4"></path>
+                </svg>
+              </span>
+              <p class="eyebrow">Automation</p>
+            </div>
+            <strong>Batch-ready</strong>
+            <span>One request can execute a complete scene and return step-by-step results.</span>
+          </article>
+          <article class="tile">
+            <div class="tile-top">
+              <span class="icon-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v3"></path>
+                  <path d="M7 9a5 5 0 0 1 10 0v5a5 5 0 0 1-10 0z"></path>
+                  <path d="M8.5 11h.01M15.5 11h.01"></path>
+                  <path d="M9.5 15c.8.6 1.6.9 2.5.9s1.7-.3 2.5-.9"></path>
+                </svg>
+              </span>
+              <p class="eyebrow">Agent</p>
+            </div>
+            <strong>OpenClaw</strong>
+            <span>Reads state, plans actions, executes them, and verifies what changed.</span>
+          </article>
+        </div>
+      </section>
+
+      <section id="team">
+        <div class="section-heading">
+          <h3>Team and collaboration model.</h3>
+          <p>
+            This project was shaped by a hybrid team: human product builders driving the concept and
+            direction, plus AI systems focused on coding and claw-side agent behavior.
+          </p>
+        </div>
+
+        <div class="team-grid">
+          <article class="section-card team-card">
+            <div class="card-top">
+              <span class="icon-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z"></path>
+                  <path d="M5 20a7 7 0 0 1 14 0"></path>
+                </svg>
+              </span>
+              <div>
+                <h4>Lucian Lu</h4>
+                <p class="team-role">Vibe</p>
+              </div>
+            </div>
+            <div class="team-meta">
+              <div class="team-meta-row">
+                <span class="mini-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 10l9-5 9 5"></path>
+                    <path d="M5 10v8h14v-8"></path>
+                    <path d="M9 18v-5h6v5"></path>
+                  </svg>
+                </span>
+                Leiden University
+              </div>
+            </div>
+          </article>
+
+          <article class="section-card team-card">
+            <div class="card-top">
+              <span class="icon-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z"></path>
+                  <path d="M5 20a7 7 0 0 1 14 0"></path>
+                </svg>
+              </span>
+              <div>
+                <h4>Xinyue Wang</h4>
+                <p class="team-role">Vibe</p>
+              </div>
+            </div>
+            <div class="team-meta">
+              <div class="team-meta-row">
+                <span class="mini-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 10l9-5 9 5"></path>
+                    <path d="M5 10v8h14v-8"></path>
+                    <path d="M9 18v-5h6v5"></path>
+                  </svg>
+                </span>
+                Leiden University
+              </div>
+            </div>
+          </article>
+
+          <article class="section-card team-card">
+            <div class="card-top">
+              <span class="icon-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z"></path>
+                  <path d="M5 20a7 7 0 0 1 14 0"></path>
+                </svg>
+              </span>
+              <div>
+                <h4>Yucheng Yang</h4>
+                <p class="team-role">Vibe</p>
+              </div>
+            </div>
+            <div class="team-meta">
+              <div class="team-meta-row">
+                <span class="mini-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 10l9-5 9 5"></path>
+                    <path d="M5 10v8h14v-8"></path>
+                    <path d="M9 18v-5h6v5"></path>
+                  </svg>
+                </span>
+                TU Eindhoven
+              </div>
+            </div>
+          </article>
+
+          <article class="section-card team-card">
+            <div class="card-top">
+              <span class="icon-badge" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v3"></path>
+                  <path d="M7 9a5 5 0 0 1 10 0v5a5 5 0 0 1-10 0z"></path>
+                  <path d="M8.5 11h.01M15.5 11h.01"></path>
+                  <path d="M9.5 15c.8.6 1.6.9 2.5.9s1.7-.3 2.5-.9"></path>
+                </svg>
+              </span>
+              <div>
+                <h4>AI Collaborators</h4>
+                <p class="team-role">Coding and Claw</p>
+              </div>
+            </div>
+            <div class="chip-row">
+              <span class="chip">
+                <span class="mini-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 4v4"></path>
+                    <path d="M8 6h8"></path>
+                    <path d="M7 11a5 5 0 0 1 10 0v4a5 5 0 0 1-10 0z"></path>
+                  </svg>
+                </span>
+                GPT-5.4 (Coding) - OpenAI
+              </span>
+              <span class="chip">
+                <span class="mini-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8z"></path>
+                  </svg>
+                </span>
+                Kimi (Claw) - Moonshot
+              </span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="stack">
+        <div class="section-heading">
+          <h3>Technical stack and system shape.</h3>
+          <p>
+            The product uses a shared home state model across frontend, simulation, control APIs,
+            and OpenClaw orchestration. That means the interface, the automation layer, and the
+            demo logic all describe the same home.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <article class="section-card">
+            <h4>Frontend and simulation</h4>
+            <ul>
+              <li>React + Vite frontend for the 2D home console</li>
+              <li>Room-based floorplan editing and direct device interaction</li>
+              <li>Time, environment temperature, and robot motion simulation</li>
+              <li>Visual feedback for light mode, open state, temperature, and robot status</li>
+            </ul>
+          </article>
+          <article class="section-card">
+            <h4>Control and orchestration</h4>
+            <ul>
+              <li>Capability-based APIs for lights, windows, doors, TV, climate, and robot</li>
+              <li>Room-aware selectors such as roomId, roomIds, ids, and all</li>
+              <li>Batch scene execution with one request and one final state</li>
+              <li>OpenClaw skill documents, API reference, and scenario playbooks</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="features">
+        <div class="section-heading">
+          <h3>Core product capabilities.</h3>
+          <p>
+            This is not a flat device list. It is a home model that supports editing, live state
+            visibility, semantic automation, and room-aware robot control.
+          </p>
+        </div>
+
+        <div class="grid-3">
+          <article class="section-card">
+            <h4>Spatial editing</h4>
+            <p>Users can define rooms, place devices, and understand the home layout at a glance.</p>
+          </article>
+          <article class="section-card">
+            <h4>Visible live state</h4>
+            <p>Light modes, windows, AC temperature, time, and robot motion are visible on the map.</p>
+          </article>
+          <article class="section-card">
+            <h4>Semantic control</h4>
+            <p>The API can target one room or the whole house instead of forcing one device at a time.</p>
+          </article>
+          <article class="section-card">
+            <h4>Room-aware robot cleaning</h4>
+            <p>OpenClaw asks to clean the kitchen or the whole home; the system generates the route.</p>
+          </article>
+          <article class="section-card">
+            <h4>Batch scene execution</h4>
+            <p>Multi-step routines are executed in order and return per-step results with final state.</p>
+          </article>
+          <article class="section-card">
+            <h4>Agent-ready documentation</h4>
+            <p>OpenClaw receives explicit rules, selectors, endpoints, and working playbooks.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="openclaw">
+        <div class="section-heading">
+          <h3>How OpenClaw connects.</h3>
+          <p>
+            The connection is explicit and inspectable. OpenClaw reads the home state, reasons over
+            user intent, plans an ordered action chain, executes it with the batch API, and uses the
+            returned final state to confirm what happened.
+          </p>
+        </div>
+
+        <article class="section-card">
+          <div class="flow">
+            <div class="flow-row">
+              <div class="flow-label">1. Read</div>
+              <div>OpenClaw calls <code>GET /api/home/state</code> to discover rooms, devices, and live conditions.</div>
+            </div>
+            <div class="flow-row">
+              <div class="flow-label">2. Reason</div>
+              <div>It translates user intent into room-aware outcomes like sleep mode, away mode, or TV ambience.</div>
+            </div>
+            <div class="flow-row">
+              <div class="flow-label">3. Plan</div>
+              <div>It builds ordered API actions, typically as one <code>POST /api/actions/batch</code> request.</div>
+            </div>
+            <div class="flow-row">
+              <div class="flow-label">4. Execute</div>
+              <div>The backend applies each action and returns step-level results plus the final state.</div>
+            </div>
+            <div class="flow-row">
+              <div class="flow-label">5. Verify</div>
+              <div>OpenClaw reports the outcome based on returned state instead of guessing or assuming.</div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section id="advantage">
+        <div class="section-heading">
+          <h3>Why this is stronger than HomeKit, Alexa, or Google Home for this use case.</h3>
+          <p>
+            Traditional smart home systems are convenient for simple device actions. This system is
+            stronger when the goal is room-level reasoning, multi-step orchestration, and verifiable
+            agent execution.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <article class="comparison-card">
+            <div class="comparison-block traditional">
+              <strong>Traditional</strong>
+              <p>Most systems trigger devices one by one or rely on fixed scenes with shallow reasoning.</p>
+            </div>
+            <div class="comparison-block ours">
+              <strong>Hackaway + OpenClaw</strong>
+              <p>The system reasons over rooms, current state, and user intent, then orchestrates the full home.</p>
+            </div>
+          </article>
+
+          <article class="comparison-card">
+            <div class="comparison-block traditional">
+              <strong>Traditional</strong>
+              <p>Automation is often bounded by vendor integrations and limited scene builders.</p>
+            </div>
+            <div class="comparison-block ours">
+              <strong>Hackaway + OpenClaw</strong>
+              <p>OpenClaw can compose exact room-aware actions with clean API selectors and batch execution.</p>
+            </div>
+          </article>
+
+          <article class="comparison-card">
+            <div class="comparison-block traditional">
+              <strong>Traditional</strong>
+              <p>Robot cleaning is usually managed in a separate app with separate logic and state.</p>
+            </div>
+            <div class="comparison-block ours">
+              <strong>Hackaway + OpenClaw</strong>
+              <p>Robot cleaning is part of the same home model and can be requested by room intent.</p>
+            </div>
+          </article>
+
+          <article class="comparison-card">
+            <div class="comparison-block traditional">
+              <strong>Traditional</strong>
+              <p>It is often hard to inspect why a routine partially failed or what state the home is now in.</p>
+            </div>
+            <div class="comparison-block ours">
+              <strong>Hackaway + OpenClaw</strong>
+              <p>Every action returns explicit results and a final home state for verification, narration, and debugging.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="demo">
+        <div class="section-heading">
+          <h3>Demo plan.</h3>
+          <p>
+            The demo starts with the frontend itself, then moves through three natural-language
+            scenarios that show why OpenClaw is useful in a spatial smart home system.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <article class="demo-card">
+            <div class="label">Frontend tour</div>
+            <h4>Show the 2D home console.</h4>
+            <p>Introduce rooms, devices, live visual state, temperature, time, and robot status.</p>
+            <p class="outcome">Outcome: the audience sees a spatial operating layer, not a generic dashboard.</p>
+          </article>
+
+          <article class="demo-card">
+            <div class="label">Scenario 1</div>
+            <h4>"I just cooked and I want to rest."</h4>
+            <p>Kitchen cleaning starts, lights turn off, bedroom switches to night mode, windows close, and climate moves to sleep comfort.</p>
+            <p class="outcome">Outcome: room-aware reasoning across multiple device types.</p>
+          </article>
+
+          <article class="demo-card">
+            <div class="label">Scenario 2</div>
+            <h4>"I'm leaving home."</h4>
+            <p>Powered devices shut down, windows and doors close, and whole-home cleaning begins.</p>
+            <p class="outcome">Outcome: one coordinated away routine with clear safety and energy behavior.</p>
+          </article>
+
+          <article class="demo-card">
+            <div class="label">Scenario 3</div>
+            <h4>"I'm going to watch TV."</h4>
+            <p>The robot stops, the rest of the house darkens, the TV room becomes cozy, and climate shifts for comfort.</p>
+            <p class="outcome">Outcome: intent-based ambience, not just device-by-device toggling.</p>
+          </article>
+        </div>
+      </section>
+
+      <footer class="footer">
+        Static presentation page for direct opening. Voiceover script remains in
+        <code> openclaw-slides/VOICEOVER.md</code>.
+      </footer>
+    </div>
+  </body>
+  </html>

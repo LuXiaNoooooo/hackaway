@@ -183,6 +183,24 @@ export function createDevicePlacement(type, room, point, existingDevices) {
     };
   }
 
+  if (type === "fridge") {
+    const placement = placeTv(point, room, wall);
+    return {
+      id: `${type}-${Math.random().toString(36).slice(2, 8)}`,
+      type,
+      name: `Fridge ${existingDevices.filter((device) => device.type === type).length + 1}`,
+      roomId: room.id,
+      wall,
+      x: placement.x,
+      y: placement.y,
+      isOpen: false,
+      fridgeTemperature: 4,
+      freezerTemperature: -18,
+      fridgeItems: [],
+      freezerItems: []
+    };
+  }
+
   return {
     id: `${type}-${Math.random().toString(36).slice(2, 8)}`,
     type,
@@ -221,6 +239,11 @@ export function moveDevice(device, room, point) {
   }
 
   if (device.type === "tv") {
+    const placement = placeTv(point, room, wall);
+    return { ...device, roomId: room.id, wall, x: placement.x, y: placement.y };
+  }
+
+  if (device.type === "fridge") {
     const placement = placeTv(point, room, wall);
     return { ...device, roomId: room.id, wall, x: placement.x, y: placement.y };
   }

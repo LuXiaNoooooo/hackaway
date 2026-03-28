@@ -217,6 +217,49 @@ function baseReducer(state, action) {
           device.id === action.deviceId ? { ...device, isOn: !device.isOn } : device
         )
       };
+    case "toggle-fridge-door":
+      return {
+        ...state,
+        devices: state.devices.map((device) =>
+          device.id === action.deviceId ? { ...device, isOpen: !device.isOpen } : device
+        )
+      };
+    case "set-fridge-temperature":
+      return {
+        ...state,
+        devices: state.devices.map((device) => {
+          if (device.id !== action.deviceId) return device;
+          const patch = {};
+          if (action.fridgeTemperature != null) patch.fridgeTemperature = clampFridgeTemp(action.fridgeTemperature);
+          if (action.freezerTemperature != null) patch.freezerTemperature = clampFreezerTemp(action.freezerTemperature);
+          return { ...device, ...patch };
+        })
+      };
+    case "fridge-add-item":
+      return {
+        ...state,
+        devices: state.devices.map((device) => {
+          if (device.id !== action.deviceId) return device;
+          const key = action.compartment === "freezer" ? "freezerItems" : "fridgeItems";
+          const items = [...(device[key] ?? [])];
+          const existing = items.find((i) => i.name.toLowerCase() === action.item.name.toLowerCase());
+          if (existing) {
+            existing.quantity = (existing.quantity ?? 0) + (action.item.quantity ?? 1);
+          } else {
+            items.push({ name: action.item.name, quantity: action.item.quantity ?? 1, unit: action.item.unit ?? "pcs" });
+          }
+          return { ...device, [key]: items };
+        })
+      };
+    case "fridge-remove-item":
+      return {
+        ...state,
+        devices: state.devices.map((device) => {
+          if (device.id !== action.deviceId) return device;
+          const key = action.compartment === "freezer" ? "freezerItems" : "fridgeItems";
+          return { ...device, [key]: (device[key] ?? []).filter((i) => i.name.toLowerCase() !== action.itemName.toLowerCase()) };
+        })
+      };
     case "add-robot-waypoint":
       return {
         ...state,
@@ -580,6 +623,10 @@ function App() {
       return "Double-click the AC for a quick power toggle, or use the floating card to adjust the target indoor temperature.";
     }
 
+    if (selectedDevice?.type === "fridge") {
+      return "Double-click the fridge to toggle the door. Use the floating card to adjust temperatures and view stored items.";
+    }
+
     if (selectedDevice?.type === "robot") {
       return "Double-click the robot to start or pause movement, or use the floating robot card to edit the route and looping.";
     }
@@ -901,6 +948,37 @@ function App() {
     }
     if (command.type === "toggle-tv") {
       dispatch({ type: "toggle-tv", deviceId: device.id });
+      return;
+    }
+    if (command.type === "toggle-fridge-door") {
+      dispatch({ type: "toggle-fridge-door", deviceId: device.id });
+      return;
+    }
+    if (command.type === "set-fridge-temperature") {
+      dispatch({
+        type: "set-fridge-temperature",
+        deviceId: device.id,
+        fridgeTemperature: command.fridgeTemperature,
+        freezerTemperature: command.freezerTemperature
+      });
+      return;
+    }
+    if (command.type === "fridge-add-item") {
+      dispatch({
+        type: "fridge-add-item",
+        deviceId: device.id,
+        compartment: command.compartment,
+        item: command.item
+      });
+      return;
+    }
+    if (command.type === "fridge-remove-item") {
+      dispatch({
+        type: "fridge-remove-item",
+        deviceId: device.id,
+        compartment: command.compartment,
+        itemName: command.itemName
+      });
       return;
     }
     if (command.type === "clear-robot-route") {
@@ -1486,6 +1564,7 @@ function DeviceSymbol({ device, environmentTemperature, selected, onPointerDown,
       {device.type === "door" && <DoorSymbol device={device} />}
       {device.type === "ac" && <AcSymbol device={device} environmentTemperature={environmentTemperature} />}
       {device.type === "tv" && <TvSymbol device={device} />}
+      {device.type === "fridge" && <FridgeSymbol device={device} />}
       {device.type === "robot" && <RobotSymbol device={device} />}
     </g>
   );
@@ -1579,6 +1658,33 @@ function TvSymbol({ device }) {
       <rect x="-18" y="-12" width="36" height="22" rx="2" className="tv-frame" />
       <rect x="-13" y="-8" width="26" height="14" className="tv-screen" />
       <line x1="-8" y1="14" x2="8" y2="14" className="device-line" />
+    </g>
+  );
+}
+
+function FridgeSymbol({ device }) {
+  const fridgeCount = (device.fridgeItems ?? []).length;
+  const freezerCount = (device.freezerItems ?? []).length;
+  const totalItems = fridgeCount + freezerCount;
+
+  return (
+    <g transform={`translate(${device.x}, ${device.y})`} className={`fridge-symbol ${device.isOpen ? "open" : "closed"}`}>
+      <rect x="-16" y="-22" width="32" height="44" rx="3" className="fridge-body" />
+      <line x1="-14" y1="-2" x2="14" y2="-2" className="fridge-divider" />
+      <rect x="-12" y="-19" width="24" height="14" rx="1.5" className="fridge-compartment freezer-zone" />
+      <rect x="-12" y="1" width="24" height="16" rx="1.5" className="fridge-compartment fridge-zone" />
+      <line x1="10" y1="-15" x2="10" y2="-9" className="fridge-handle" />
+      <line x1="10" y1="5" x2="10" y2="13" className="fridge-handle" />
+      <circle cx="-10" cy="-12" r="2" className="fridge-led" />
+      <text x="0" y="34" textAnchor="middle" className="fridge-label">
+        {device.fridgeTemperature}°/{device.freezerTemperature}°
+      </text>
+      {totalItems > 0 && (
+        <g transform="translate(16, -22)">
+          <circle r="8" className="fridge-badge" />
+          <text textAnchor="middle" dy="3.5" className="fridge-badge-text">{totalItems}</text>
+        </g>
+      )}
     </g>
   );
 }
@@ -1698,6 +1804,85 @@ function DeviceControlCard({ device, environmentTemperature, robotRouteEditing, 
         </>
       )}
 
+      {device.type === "fridge" && (
+        <>
+          <button className="control-button" onClick={() => onCommand({ type: "toggle-fridge-door" })}>
+            {device.isOpen ? "Close Door" : "Open Door"}
+          </button>
+          <div className="fridge-temp-row">
+            <div className="fridge-temp-group">
+              <span className="fridge-temp-label">Fridge</span>
+              <div className="fridge-temp-controls">
+                <button
+                  className="control-button secondary small"
+                  onClick={() => onCommand({ type: "set-fridge-temperature", fridgeTemperature: device.fridgeTemperature - 1 })}
+                >
+                  −
+                </button>
+                <strong>{device.fridgeTemperature}°C</strong>
+                <button
+                  className="control-button secondary small"
+                  onClick={() => onCommand({ type: "set-fridge-temperature", fridgeTemperature: device.fridgeTemperature + 1 })}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            <div className="fridge-temp-group">
+              <span className="fridge-temp-label">Freezer</span>
+              <div className="fridge-temp-controls">
+                <button
+                  className="control-button secondary small"
+                  onClick={() => onCommand({ type: "set-fridge-temperature", freezerTemperature: device.freezerTemperature - 1 })}
+                >
+                  −
+                </button>
+                <strong>{device.freezerTemperature}°C</strong>
+                <button
+                  className="control-button secondary small"
+                  onClick={() => onCommand({ type: "set-fridge-temperature", freezerTemperature: device.freezerTemperature + 1 })}
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="fridge-inventory">
+            <div className="fridge-inventory-section">
+              <strong>Fridge ({(device.fridgeItems ?? []).length})</strong>
+              {(device.fridgeItems ?? []).length === 0 && <span className="fridge-empty">Empty</span>}
+              {(device.fridgeItems ?? []).map((item, idx) => (
+                <div key={`f-${idx}`} className="fridge-item-row">
+                  <span>{item.name} × {item.quantity} {item.unit}</span>
+                  <button
+                    className="fridge-item-remove"
+                    onClick={() => onCommand({ type: "fridge-remove-item", compartment: "fridge", itemName: item.name })}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="fridge-inventory-section">
+              <strong>Freezer ({(device.freezerItems ?? []).length})</strong>
+              {(device.freezerItems ?? []).length === 0 && <span className="fridge-empty">Empty</span>}
+              {(device.freezerItems ?? []).map((item, idx) => (
+                <div key={`z-${idx}`} className="fridge-item-row">
+                  <span>{item.name} × {item.quantity} {item.unit}</span>
+                  <button
+                    className="fridge-item-remove"
+                    onClick={() => onCommand({ type: "fridge-remove-item", compartment: "freezer", itemName: item.name })}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="mini-copy">Double-click the fridge to toggle the door. Use the OpenClaw API to manage items.</p>
+        </>
+      )}
+
       {device.type === "robot" && (
         <>
           <div className="mode-row single">
@@ -1736,6 +1921,7 @@ function toolLabel(type) {
     door: "Door",
     ac: "AC",
     tv: "TV",
+    fridge: "Fridge",
     robot: "Robot"
   }[type];
 }
@@ -1757,6 +1943,11 @@ function deviceStatus(device, environmentTemperature = null) {
   }
   if (device.type === "tv") {
     return device.isOn ? "On" : "Off";
+  }
+  if (device.type === "fridge") {
+    const fridgeCount = (device.fridgeItems ?? []).length;
+    const freezerCount = (device.freezerItems ?? []).length;
+    return `${device.isOpen ? "Open" : "Closed"} • ${device.fridgeTemperature}°C/${device.freezerTemperature}°C • ${fridgeCount + freezerCount} items`;
   }
   return `${device.status} • ${device.route?.length ?? 0} points`;
 }
@@ -1863,6 +2054,17 @@ function mergeRemoteDeviceState(localDevice, remoteDevice) {
     };
   }
 
+  if (localDevice.type === "fridge") {
+    return {
+      ...localDevice,
+      isOpen: remoteDevice.isOpen,
+      fridgeTemperature: remoteDevice.fridgeTemperature,
+      freezerTemperature: remoteDevice.freezerTemperature,
+      fridgeItems: remoteDevice.fridgeItems ?? [],
+      freezerItems: remoteDevice.freezerItems ?? []
+    };
+  }
+
   if (localDevice.type === "robot") {
     return {
       ...localDevice,
@@ -1894,6 +2096,9 @@ function getQuickActionCommand(device) {
   }
   if (device.type === "tv") {
     return { type: "toggle-tv" };
+  }
+  if (device.type === "fridge") {
+    return { type: "toggle-fridge-door" };
   }
   if (device.type === "robot" && device.route?.length) {
     return {
@@ -1932,6 +2137,14 @@ function getDeviceCardPosition(device) {
 
 function clampTemperature(value) {
   return Math.max(16, Math.min(30, Math.round(value)));
+}
+
+function clampFridgeTemp(value) {
+  return Math.max(1, Math.min(8, Math.round(value)));
+}
+
+function clampFreezerTemp(value) {
+  return Math.max(-25, Math.min(-10, Math.round(value)));
 }
 
 function computeEnvironmentTemperature(state, deltaMs) {

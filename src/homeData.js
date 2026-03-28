@@ -17,6 +17,7 @@ export const deviceTemplates = [
   { key: "door", label: "Add Door", hint: "Click anywhere inside a room. The door snaps to the nearest wall." },
   { key: "ac", label: "Add AC", hint: "Click anywhere inside a room. The AC unit mounts to the nearest wall." },
   { key: "tv", label: "Add TV", hint: "Click anywhere inside a room. The TV mounts to the nearest wall." },
+  { key: "fridge", label: "Add Fridge", hint: "Click inside a room. The fridge snaps to the nearest wall." },
   { key: "robot", label: "Place Robot", hint: "Click inside a room to place or move the robot." }
 ];
 
@@ -110,6 +111,31 @@ export const initialDevices = [
     y: 282,
     wall: "east",
     isOn: true
+  },
+  {
+    id: "device-fridge-kitchen",
+    type: "fridge",
+    name: "Smart Fridge",
+    roomId: "room-kitchen",
+    x: 520,
+    y: 160,
+    wall: "north",
+    isOpen: false,
+    fridgeTemperature: 4,
+    freezerTemperature: -18,
+    fridgeItems: [
+      { name: "Whole Milk", quantity: 1, unit: "L" },
+      { name: "Free-Range Eggs", quantity: 10, unit: "pcs" },
+      { name: "Gouda Cheese", quantity: 1, unit: "pack" },
+      { name: "Butter", quantity: 1, unit: "pack" },
+      { name: "Greek Yogurt", quantity: 2, unit: "cups" },
+      { name: "Orange Juice", quantity: 1, unit: "L" }
+    ],
+    freezerItems: [
+      { name: "Frozen Pizza", quantity: 2, unit: "pcs" },
+      { name: "Ice Cream", quantity: 1, unit: "tub" },
+      { name: "Frozen Vegetables", quantity: 1, unit: "bag" }
+    ]
   },
   {
     id: "device-ac-bedroom",

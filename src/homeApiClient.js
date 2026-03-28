@@ -101,6 +101,54 @@ function buildDeviceRequests(device, command) {
     ];
   }
 
+  if (command.type === "toggle-fridge-door") {
+    return [
+      {
+        path: "/api/devices/fridge/door",
+        body: withDeviceId(device, { open: !device.isOpen })
+      }
+    ];
+  }
+
+  if (command.type === "set-fridge-temperature") {
+    const payload = {};
+    if (command.fridgeTemperature != null) payload.fridgeTemperature = command.fridgeTemperature;
+    if (command.freezerTemperature != null) payload.freezerTemperature = command.freezerTemperature;
+    return [
+      {
+        path: "/api/devices/fridge/temperature",
+        body: withDeviceId(device, payload)
+      }
+    ];
+  }
+
+  if (command.type === "fridge-add-item") {
+    return [
+      {
+        path: "/api/devices/fridge/items",
+        body: withDeviceId(device, {
+          action: "add",
+          compartment: command.compartment ?? "fridge",
+          item: command.item
+        })
+      }
+    ];
+  }
+
+  if (command.type === "fridge-remove-item") {
+    return [
+      {
+        path: "/api/devices/fridge/items",
+        body: withDeviceId(device, {
+          action: "remove",
+          compartment: command.compartment ?? "fridge",
+          itemName: command.itemName,
+          quantity: command.quantity
+        })
+      }
+    ];
+  }
+
   if (command.type === "clear-robot-route") {
     return [
       {
