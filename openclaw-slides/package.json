@@ -1,0 +1,10 @@
+{
+  "name": "openclaw-slides",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "../node_modules/.bin/vite --config vite.config.ts",
+    "build": "../node_modules/.bin/vite build --config vite.config.ts",
+    "preview": "../node_modules/.bin/vite preview --config vite.config.ts"
+  }
+}
